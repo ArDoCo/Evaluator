@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EvaluationTest {
+class EvaluationTest {
     private static Logger logger = LoggerFactory.getLogger(EvaluationTest.class);
     private static final Map<String, Integer> nameToConfusionMatrixSum = Map.of( //
             "bigbluebutton", 47600,//
