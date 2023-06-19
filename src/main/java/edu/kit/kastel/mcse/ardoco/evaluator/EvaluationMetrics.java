@@ -4,9 +4,6 @@ package edu.kit.kastel.mcse.ardoco.evaluator;
 import java.math.BigDecimal;
 import java.math.MathContext;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class EvaluationMetrics {
 
     private EvaluationMetrics() throws IllegalAccessException {
@@ -14,8 +11,7 @@ public class EvaluationMetrics {
     }
 
     /**
-     * Checks the provided recall. Returns 1.0 if it is NaN, because this means that there was no missing
-     * classification.
+     * Checks the provided recall. Returns 1.0 if it is NaN, because this means that there was no missing classification.
      *
      * @param recall the precision
      * @return 1.0 if recall is NaN, else the original value
@@ -28,8 +24,7 @@ public class EvaluationMetrics {
     }
 
     /**
-     * Calculates the recall for the given True Positives (TPs) and False Negatives (FNs). If TP+NP=0, then returns 1.0
-     * because there was no missing element.
+     * Calculates the recall for the given True Positives (TPs) and False Negatives (FNs). If TP+NP=0, then returns 1.0 because there was no missing element.
      *
      * @param truePositives  number of TPs
      * @param falseNegatives number of FNs
@@ -42,8 +37,7 @@ public class EvaluationMetrics {
     }
 
     /**
-     * Checks the provided precision. Returns 1.0 if it is NaN, because this means that there was no wrong
-     * classification.
+     * Checks the provided precision. Returns 1.0 if it is NaN, because this means that there was no wrong classification.
      *
      * @param precision the precision
      * @return 1.0 if precision is NaN, else the original value
@@ -56,8 +50,8 @@ public class EvaluationMetrics {
     }
 
     /**
-     * Calculates the precision for the given True Positives (TPs) and False Positives (FPs). If TP+FP=0, then returns
-     * 1.0 because there was no wrong classification.
+     * Calculates the precision for the given True Positives (TPs) and False Positives (FPs). If TP+FP=0, then returns 1.0 because there was no wrong
+     * classification.
      *
      * @param truePositives  number of TPs
      * @param falsePositives number of FPs
@@ -95,8 +89,8 @@ public class EvaluationMetrics {
     }
 
     /**
-     * Calculates the F1-score using the provided True Positives (TPs), False Positives (FPs), and False Negatives
-     * (FNs). If intermediate calculation shows that precision+recall=0, returns 0.0.
+     * Calculates the F1-score using the provided True Positives (TPs), False Positives (FPs), and False Negatives (FNs). If intermediate calculation shows that
+     * precision+recall=0, returns 0.0.
      *
      * @param truePositives  number of TPs
      * @param falsePositives number of FPs
@@ -112,8 +106,8 @@ public class EvaluationMetrics {
     /**
      * Calculates the accuracy based on the true positives, false positives, false negatives, and true negatives.
      *
-     * @see <a href="https://en.wikipedia.org/wiki/Accuracy_and_precision">Wikipedia: Accuracy and Precision</a>
      * @return the accuracy
+     * @see <a href="https://en.wikipedia.org/wiki/Accuracy_and_precision">Wikipedia: Accuracy and Precision</a>
      */
     public static double calculateAccuracy(int truePositives, int falsePositives, int falseNegatives, int trueNegatives) {
         double numerator = truePositives + trueNegatives;
@@ -123,13 +117,11 @@ public class EvaluationMetrics {
 
     /**
      * Returns the Phi Coefficient (also known as mean square contingency coefficient (MCC)) based on the true positives, false positives, false negatives, and
-     * true negatives.
-     * The return value lies between -1 and +1. -1 show perfect disagreement, +1 shows perfect agreement and 0 indicates no relationship.
+     * true negatives. The return value lies between -1 and +1. -1 show perfect disagreement, +1 shows perfect agreement and 0 indicates no relationship.
      * Therefore, good values should be close to +1.
      *
-     * @see <a href="https://en.wikipedia.org/wiki/Phi_coefficient">Wikipedia: Phi coefficient</a>
-     *
      * @return the value for Phi Coefficient (or MCC)
+     * @see <a href="https://en.wikipedia.org/wiki/Phi_coefficient">Wikipedia: Phi coefficient</a>
      */
     public static double calculatePhiCoefficient(int truePositives, int falsePositives, int falseNegatives, int trueNegatives) {
         var tp = BigDecimal.valueOf(truePositives);
@@ -156,13 +148,13 @@ public class EvaluationMetrics {
     /**
      * Calculates the maximum possible value of the phi coefficient given the four values of the confusion matrix (TP, FP, FN, TN).
      *
-     * @see <a href="https://link.springer.com/article/10.1007/BF02288588">Paper about PhiMax by Ferguson (1941)</a>
-     * @see <a href="https://journals.sagepub.com/doi/abs/10.1177/001316449105100403">Paper about Phi/PhiMax by Davenport et al. (1991)</a>
      * @param truePositives  number of true positives
      * @param falsePositives number of false positives
      * @param falseNegatives number of false negatives
      * @param trueNegatives  number of true negatives
      * @return The maximum possible value of phi.
+     * @see <a href="https://link.springer.com/article/10.1007/BF02288588">Paper about PhiMax by Ferguson (1941)</a>
+     * @see <a href="https://journals.sagepub.com/doi/abs/10.1177/001316449105100403">Paper about Phi/PhiMax by Davenport et al. (1991)</a>
      */
     public static double calculatePhiCoefficientMax(int truePositives, int falsePositives, int falseNegatives, int trueNegatives) {
         var tp = BigDecimal.valueOf(truePositives);
@@ -171,8 +163,8 @@ public class EvaluationMetrics {
         var tn = BigDecimal.valueOf(trueNegatives);
 
         var test = fn.add(tp).compareTo(fp.add(tp)) >= 0;
-        var nominator = (fp.add(tn)).multiply(tp.add(fp)).sqrt(MathContext.DECIMAL128);
-        var denominator = (fn.add(tn)).multiply(tp.add(fn)).sqrt(MathContext.DECIMAL128);
+        var nominator = fp.add(tn).multiply(tp.add(fp)).sqrt(MathContext.DECIMAL128);
+        var denominator = fn.add(tn).multiply(tp.add(fn)).sqrt(MathContext.DECIMAL128);
         if (test) {
             // standard case
             return nominator.divide(denominator, MathContext.DECIMAL128).doubleValue();
@@ -184,13 +176,13 @@ public class EvaluationMetrics {
 
     /**
      * Calculates the normalized phi correlation coefficient value that is phi divided by its maximum possible value.
-     * 
-     * @see <a href="https://journals.sagepub.com/doi/abs/10.1177/001316449105100403">Paper about Phi/PhiMax</a>
+     *
      * @param truePositives  number of true positives
      * @param falsePositives number of false positives
      * @param falseNegatives number of false negatives
      * @param trueNegatives  number of true negatives
      * @return The value of Phi/PhiMax
+     * @see <a href="https://journals.sagepub.com/doi/abs/10.1177/001316449105100403">Paper about Phi/PhiMax</a>
      */
     public static double calculatePhiOverPhiMax(int truePositives, int falsePositives, int falseNegatives, int trueNegatives) {
         var phi = calculatePhiCoefficient(truePositives, falsePositives, falseNegatives, trueNegatives);
@@ -201,10 +193,10 @@ public class EvaluationMetrics {
     /**
      * Calculates the specificity, also known as selectivity or true negative rate, based on the number of true negatives and false positives.
      *
-     * @see <a href="https://en.wikipedia.org/wiki/Sensitivity_and_specificity">Wikipedia: Sensitivity and specificity</a>
      * @param trueNegatives  the number of true negatives
      * @param falsePositives the number of false positives
      * @return the specificity
+     * @see <a href="https://en.wikipedia.org/wiki/Sensitivity_and_specificity">Wikipedia: Sensitivity and specificity</a>
      */
     public static double calculateSpecificity(int trueNegatives, int falsePositives) {
         double specificity = trueNegatives / ((double) trueNegatives + falsePositives);

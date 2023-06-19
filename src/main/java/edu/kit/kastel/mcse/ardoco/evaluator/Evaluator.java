@@ -1,10 +1,8 @@
 package edu.kit.kastel.mcse.ardoco.evaluator;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -18,10 +16,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Evaluator {
-    private static Logger logger = LoggerFactory.getLogger(Evaluator.class);
+    private static final Logger logger = LoggerFactory.getLogger(Evaluator.class);
 
     private Evaluator() {
         throw new IllegalStateException();
+    }
+
+    public static EvaluationResults<String> evaluateSimple(Path traceLinkPath, Path goldStandardPath) {
+        return evaluate(traceLinkPath, goldStandardPath, -1);
     }
 
     public static EvaluationResults<String> evaluate(Path traceLinkPath, Path goldStandardPath, int confusionMatrixSum) {
@@ -31,13 +33,16 @@ public class Evaluator {
         return evaluate(traceLinks, goldStandard, confusionMatrixSum);
     }
 
-    public static EvaluationResults<String> evaluate(ImmutableList<String> traceLinks, ImmutableList<String> goldStandard, int confusionMatrixSum) {
-        EvaluationResults<String> evaluationResults = calculateEvaluationResults(traceLinks, goldStandard, confusionMatrixSum);
-        logger.info(evaluationResults.getExtendedResultsString());
-        return evaluationResults;
+    public static EvaluationResults<String> evaluateSimple(ImmutableList<String> traceLinks, ImmutableList<String> goldStandard) {
+        return evaluate(traceLinks, goldStandard, -1);
     }
 
-    private static EvaluationResults<String> calculateEvaluationResults(ImmutableList<String> traceLinks, ImmutableCollection<String> goldStandard, int confusionMatrixSum) {
+    public static EvaluationResults<String> evaluate(ImmutableList<String> traceLinks, ImmutableList<String> goldStandard, int confusionMatrixSum) {
+        return calculateEvaluationResults(traceLinks, goldStandard, confusionMatrixSum);
+    }
+
+    private static EvaluationResults<String> calculateEvaluationResults(ImmutableList<String> traceLinks, ImmutableCollection<String> goldStandard,
+            int confusionMatrixSum) {
         Set<String> distinctTraceLinks = new HashSet<>(traceLinks.castToCollection());
         Set<String> distinctGoldStandard = new HashSet<>(goldStandard.castToCollection());
 
@@ -87,6 +92,5 @@ public class Evaluator {
         lines.remove(0); //remove header
         return Lists.immutable.fromStream(lines.stream().filter(Predicate.not(String::isBlank)));
     }
-
 
 }

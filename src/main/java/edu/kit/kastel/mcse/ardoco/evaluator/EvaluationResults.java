@@ -19,12 +19,15 @@ public record EvaluationResults<T>(double precision, double recall, double f1, I
         output += String.format(Locale.ENGLISH, "%n\tPhi Coef.:%8.2f%n\tPhi/PhiMax:%7.2f (Phi Max: %.2f)", phiCoefficient, phiOverPhiMax, phiCoefficientMax);
         return output;
     }
-    public String getExtendedResultsString() {
+    public String getResultsString() {
         StringBuilder outputBuilder = new StringBuilder();
         outputBuilder.append(String.format(Locale.ENGLISH,
                 "%n\tPrecision:%8.2f%n\tRecall:%11.2f%n\tF1:%15.2f", precision, recall, f1));
-        outputBuilder.append(String.format(Locale.ENGLISH, "%n\tAccuracy:%9.2f%n\tSpecificity:%6.2f", accuracy, specificity));
-        outputBuilder.append(String.format(Locale.ENGLISH, "%n\tPhi Coef.:%8.2f", phiCoefficient));
+        if (trueNegatives > 0) {
+            outputBuilder.append(String.format(Locale.ENGLISH, "%n\tAccuracy:%9.2f%n\tSpecificity:%6.2f", accuracy, specificity));
+            outputBuilder.append(String.format(Locale.ENGLISH, "%n\tPhi Coef.:%8.2f", phiCoefficient));
+        }
+
         return outputBuilder.toString();
     }
 
@@ -66,6 +69,13 @@ public record EvaluationResults<T>(double precision, double recall, double f1, I
         double phiCoefficientMax = 0;
         double phiOverPhiMax = 0;
 
+        // There are no true negatives set, so we cannot calculate the other metrics
+        if (nrTrueNeg <= 0) {
+            return new EvaluationResults<>(precision, recall, f1, matrix.truePositives(), matrix.trueNegatives(), matrix.falseNegatives(), matrix.falsePositives(),
+                    accuracy, phiCoefficient, specificity, phiCoefficientMax, phiOverPhiMax);
+        }
+
+
         if (nrTruePos + nrFalsePos + nrFalseNeg + nrTrueNeg != 0) {
             accuracy = EvaluationMetrics.calculateAccuracy(nrTruePos, nrFalsePos, nrFalseNeg, nrTrueNeg);
         }
@@ -80,7 +90,7 @@ public record EvaluationResults<T>(double precision, double recall, double f1, I
             phiOverPhiMax = EvaluationMetrics.calculatePhiOverPhiMax(nrTruePos, nrFalsePos, nrFalseNeg, nrTrueNeg);
         }
 
-        return new EvaluationResults<T>(precision, recall, f1, matrix.truePositives(), matrix.trueNegatives(), matrix.falseNegatives(), matrix.falsePositives(),
+        return new EvaluationResults<>(precision, recall, f1, matrix.truePositives(), matrix.trueNegatives(), matrix.falseNegatives(), matrix.falsePositives(),
                 accuracy, phiCoefficient, specificity, phiCoefficientMax, phiOverPhiMax);
     }
 
