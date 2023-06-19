@@ -14,54 +14,28 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.kit.kastel.mcse.ardoco.evaluator.EvaluationResults;
 import edu.kit.kastel.mcse.ardoco.evaluator.Evaluator;
 
-public class EvaluatorCLI {
-    private static final Logger logger = LoggerFactory.getLogger(EvaluatorCLI.class);
+public class EvaluatorCli {
+    private static final Logger logger = LoggerFactory.getLogger(EvaluatorCli.class);
 
     private static final String CMD_HELP = "h";
     private static final String CMD_TRACE_LINK_CSV = "t";
     private static final String CMD_GOLD_STANDARD_CSV = "g";
     private static final String CMD_CONFUSION_MATRIX_SUM = "c";
 
-
-
     private static Options options;
 
-    private EvaluatorCLI() {
-        throw new IllegalAccessError();
+    private EvaluationResults<String> lastResults = null;
+
+    protected EvaluatorCli() {
+        // empty
     }
 
     public static void main(String[] args) {
-        CommandLine cmd;
-        try {
-            cmd = parseCommandLine(args);
-        } catch (IllegalArgumentException | ParseException e) {
-            logger.error(e.getMessage());
-            printUsage();
-            return;
-        }
-
-        if (cmd.hasOption(CMD_HELP)) {
-            printUsage();
-            return;
-        }
-
-        Path traceLinkCsv;
-        Path goldStandardCsv;
-        int confusionMatrixSum = -1;
-        try {
-            traceLinkCsv = ensurePath(cmd.getOptionValue(CMD_TRACE_LINK_CSV));
-            goldStandardCsv = ensurePath(cmd.getOptionValue(CMD_GOLD_STANDARD_CSV));
-            confusionMatrixSum = (Integer) cmd.getParsedOptionValue(CMD_CONFUSION_MATRIX_SUM);
-        } catch (IOException | ParseException e) {
-            logger.warn("Could not properly handle input. Aborting.", e);
-            return;
-        }
-
-        Evaluator.evaluate(traceLinkCsv, goldStandardCsv, confusionMatrixSum);
+        new EvaluatorCli().startEvaluator(args);
     }
-
 
     private static void printUsage() {
         var formatter = new HelpFormatter();
@@ -87,9 +61,10 @@ public class EvaluatorCLI {
         opt.setType(String.class);
         options.addOption(opt);
 
-        opt = new Option(CMD_CONFUSION_MATRIX_SUM, "confusionMatrixSum", true, "Integer for the size of the solution space (= number of artifacts on one side times the number of artifacts on the other side)");
+        opt = new Option(CMD_CONFUSION_MATRIX_SUM, "confusionMatrixSum", true,
+                "Integer for the size of the solution space (= number of artifacts on one side times the number of artifacts on the other side)");
         opt.setRequired(false);
-        opt.setType(Integer.class);
+        opt.setType(Number.class);
         options.addOption(opt);
 
         CommandLineParser parser = new DefaultParser();
@@ -106,5 +81,48 @@ public class EvaluatorCLI {
         }
         // File not available
         throw new IOException("The specified file does not exist and/or could not be created: " + path);
+    }
+
+    protected void startEvaluator(String[] args) {
+        CommandLine cmd;
+        try {
+            cmd = parseCommandLine(args);
+        } catch (IllegalArgumentException | ParseException e) {
+            logger.error(e.getMessage());
+            printUsage();
+            return;
+        }
+
+        if (cmd.hasOption(CMD_HELP)) {
+            printUsage();
+            return;
+        }
+
+        Path traceLinkCsv;
+        Path goldStandardCsv;
+        int confusionMatrixSum = -1;
+        try {
+            traceLinkCsv = ensurePath(cmd.getOptionValue(CMD_TRACE_LINK_CSV));
+            goldStandardCsv = ensurePath(cmd.getOptionValue(CMD_GOLD_STANDARD_CSV));
+            if (cmd.hasOption(CMD_CONFUSION_MATRIX_SUM)) {
+                confusionMatrixSum = ((Number) cmd.getParsedOptionValue(CMD_CONFUSION_MATRIX_SUM)).intValue();
+            }
+        } catch (IOException | ParseException e) {
+            logger.warn("Could not properly handle input. Aborting.", e);
+            return;
+        }
+
+        EvaluationResults<String> results;
+        if (confusionMatrixSum > 0) {
+            results = Evaluator.evaluate(traceLinkCsv, goldStandardCsv, confusionMatrixSum);
+        } else {
+            results = Evaluator.evaluateSimple(traceLinkCsv, goldStandardCsv);
+        }
+        lastResults = results;
+        logger.info("{}", results);
+    }
+
+    public EvaluationResults<String> getLastResults() {
+        return lastResults;
     }
 }
