@@ -28,8 +28,8 @@ class EvaluatorCliTest {
     @DisplayName("With no ConfusionMatrixSum")
     void cliNoConfusionMatrixSumTest() {
         String[] args = new String[] {//
-                "-g", "src\\test\\resources\\testCSVs\\gs-sad-code\\teammates.csv", //
-                "-t", "src\\test\\resources\\testCSVs\\tls-sad-code\\teammates.csv"//
+                "-g", "src/test/resources/testCSVs/gs-sad-code/teammates.csv", //
+                "-t", "src/test/resources/testCSVs/tls-sad-code/teammates.csv"//
         };
         cli.startEvaluator(args);
         Assertions.assertNotNull(cli.getLastResults());
@@ -39,9 +39,34 @@ class EvaluatorCliTest {
     @DisplayName("With ConfusionMatrixSum")
     void cliWithConfusionMatrixSumTest() {
         String[] args = new String[] {//
-                "-g", "src\\test\\resources\\testCSVs\\gs-sad-code\\teammates.csv", //
-                "-t", "src\\test\\resources\\testCSVs\\tls-sad-code\\teammates.csv",//
+                "-g", "src/test/resources/testCSVs/gs-sad-code/teammates.csv", //
+                "-t", "src/test/resources/testCSVs/tls-sad-code/teammates.csv",//
                 "-c", "165330" //
+        };
+        cli.startEvaluator(args);
+        Assertions.assertNotNull(cli.getLastResults());
+    }
+
+    @Test
+    @DisplayName("With weak comparison")
+    void cliWeakComparisonTest() {
+        String[] args = new String[] {//
+                "-g", "src/test/resources/testCSVs/gs-sad-code/teastore.csv", //
+                "-t", "src/test/resources/testCSVs/tls-sad-code-ftlr/teastore_FileLevelWMDMc_tracelinks.csv",//
+                "-w"//
+        };
+        cli.startEvaluator(args);
+        Assertions.assertNotNull(cli.getLastResults());
+    }
+
+    @Test
+    @DisplayName("With weak comparison and ConfusionMatrixSum")
+    void cliWeakComparisonAndConfusionMatrixSumTest() {
+        String[] args = new String[] {//
+                "-g", "src/test/resources/testCSVs/gs-sad-code/teastore.csv", //
+                "-t", "src/test/resources/testCSVs/tls-sad-code-ftlr/teastore_FileLevelWMDMc_tracelinks.csv",//
+                "-c", "8815", //
+                "-w"//
         };
         cli.startEvaluator(args);
         Assertions.assertNotNull(cli.getLastResults());

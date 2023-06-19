@@ -80,4 +80,30 @@ class EvaluationTest {
         }
     }
 
+    @Test
+    @DisplayName("Evaluate Simple Weak")
+    void evaluateSimpleWeakTest() {
+        Path goldStandardCsvDirectory = Paths.get("src/test/resources/testCSVs/gs-sad-code");
+        Path traceLinksCsvDirectory = Paths.get("src/test/resources/testCSVs/tls-sad-code-ftlr");
+        File goldStandardCsvDirectoryFile = goldStandardCsvDirectory.toFile();
+        File traceLinksCsvDirectoryFile = traceLinksCsvDirectory.toFile();
+        Assertions.assertTrue(goldStandardCsvDirectoryFile.exists() && traceLinksCsvDirectoryFile.exists());
+
+        var goldStandardsFiles = goldStandardCsvDirectoryFile.listFiles();
+        var traceLinksFiles = traceLinksCsvDirectoryFile.listFiles();
+
+        for (var traceLinks : traceLinksFiles) {
+            var name = traceLinks.getName().split("_")[0].toLowerCase();
+
+            var goldStandardOptional = getMatchingGoldStandard(goldStandardsFiles, name);
+            if (goldStandardOptional.isEmpty()) {
+                continue;
+            }
+
+            EvaluationResults<String> evaluationResults = Evaluator.evaluateSimpleWeak(traceLinks.toPath(), goldStandardOptional.get().toPath());
+            Assertions.assertNotNull(evaluationResults);
+            logger.info(name + evaluationResults.getResultsString());
+        }
+    }
+
 }

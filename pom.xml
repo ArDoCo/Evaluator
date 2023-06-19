@@ -76,6 +76,10 @@
       <version>1.5.0</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.eclipse.collections</groupId>
       <artifactId>eclipse-collections</artifactId>
     </dependency>

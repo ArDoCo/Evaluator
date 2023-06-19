@@ -25,6 +25,7 @@ public class EvaluatorCli {
     private static final String CMD_TRACE_LINK_CSV = "t";
     private static final String CMD_GOLD_STANDARD_CSV = "g";
     private static final String CMD_CONFUSION_MATRIX_SUM = "c";
+    private static final String CMD_WEAK_COMPARISON = "w";
 
     private static Options options;
 
@@ -66,6 +67,10 @@ public class EvaluatorCli {
                 "Integer for the size of the solution space (= number of artifacts on one side times the number of artifacts on the other side)");
         opt.setRequired(false);
         opt.setType(Number.class);
+        options.addOption(opt);
+
+        opt = new Option(CMD_WEAK_COMPARISON, "weakComparison", false, "perform a weak comparison");
+        opt.setRequired(false);
         options.addOption(opt);
 
         CommandLineParser parser = new DefaultParser();
@@ -113,11 +118,21 @@ public class EvaluatorCli {
             return;
         }
 
+        boolean weakComparison = cmd.hasOption(CMD_WEAK_COMPARISON);
+
         EvaluationResults<String> results;
         if (confusionMatrixSum > 0) {
-            results = Evaluator.evaluate(traceLinkCsv, goldStandardCsv, confusionMatrixSum);
+            if (weakComparison) {
+                results = Evaluator.evaluateWeak(traceLinkCsv, goldStandardCsv, confusionMatrixSum);
+            } else {
+                results = Evaluator.evaluate(traceLinkCsv, goldStandardCsv, confusionMatrixSum);
+            }
         } else {
-            results = Evaluator.evaluateSimple(traceLinkCsv, goldStandardCsv);
+            if (weakComparison) {
+                results = Evaluator.evaluateSimpleWeak(traceLinkCsv, goldStandardCsv);
+            } else {
+                results = Evaluator.evaluateSimple(traceLinkCsv, goldStandardCsv);
+            }
         }
         lastResults = results;
         logger.info("{}", results);

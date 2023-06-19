@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.collection.ImmutableCollection;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -27,6 +28,10 @@ public class Evaluator {
         return evaluate(traceLinkPath, goldStandardPath, -1);
     }
 
+    public static EvaluationResults<String> evaluateSimpleWeak(Path traceLinkPath, Path goldStandardPath) {
+        return evaluateWeak(traceLinkPath, goldStandardPath, -1);
+    }
+
     public static EvaluationResults<String> evaluate(Path traceLinkPath, Path goldStandardPath, int confusionMatrixSum) {
         var traceLinks = getLinesFromCsvFile(traceLinkPath);
         var goldStandard = getLinesFromCsvFile(goldStandardPath);
@@ -34,34 +39,41 @@ public class Evaluator {
         return evaluate(traceLinks, goldStandard, confusionMatrixSum);
     }
 
-    public static EvaluationResults<String> evaluateSimple(ImmutableList<String> traceLinks, ImmutableList<String> goldStandard) {
-        return evaluate(traceLinks, goldStandard, -1);
+    public static EvaluationResults<String> evaluateWeak(Path traceLinkPath, Path goldStandardPath, int confusionMatrixSum) {
+        var traceLinks = getLinesFromCsvFile(traceLinkPath);
+        var goldStandard = getLinesFromCsvFile(goldStandardPath);
+
+        return evaluateWeak(traceLinks, goldStandard, confusionMatrixSum);
     }
 
     public static EvaluationResults<String> evaluate(ImmutableList<String> traceLinks, ImmutableList<String> goldStandard, int confusionMatrixSum) {
-        return calculateEvaluationResults(traceLinks, goldStandard, confusionMatrixSum);
+        return calculateEvaluationResults(traceLinks, goldStandard, confusionMatrixSum, false);
+    }
+
+    public static EvaluationResults<String> evaluateWeak(ImmutableList<String> traceLinks, ImmutableList<String> goldStandard, int confusionMatrixSum) {
+        return calculateEvaluationResults(traceLinks, goldStandard, confusionMatrixSum, true);
     }
 
     private static EvaluationResults<String> calculateEvaluationResults(ImmutableList<String> traceLinks, ImmutableCollection<String> goldStandard,
-            int confusionMatrixSum) {
+            int confusionMatrixSum, boolean weakComparison) {
         Set<String> distinctTraceLinks = new HashSet<>(traceLinks.castToCollection());
         Set<String> distinctGoldStandard = new HashSet<>(goldStandard.castToCollection());
 
         // True Positives are the trace links that are contained on both lists
         Set<String> truePositives = distinctTraceLinks.stream()
-                .filter(tl -> isTraceLinkContainedInGoldStandard(tl, distinctGoldStandard))
+                .filter(tl -> isTraceLinkContainedInGoldStandard(tl, distinctGoldStandard, weakComparison))
                 .collect(Collectors.toSet());
         ImmutableList<String> truePositivesList = Lists.immutable.ofAll(truePositives);
 
         // False Positives are the trace links that are only contained in the result set
         Set<String> falsePositives = distinctTraceLinks.stream()
-                .filter(tl -> !isTraceLinkContainedInGoldStandard(tl, distinctGoldStandard))
+                .filter(tl -> !isTraceLinkContainedInGoldStandard(tl, distinctGoldStandard, weakComparison))
                 .collect(Collectors.toSet());
         ImmutableList<String> falsePositivesList = Lists.immutable.ofAll(falsePositives);
 
         // False Negatives are the trace links that are only contained in the gold standard
         Set<String> falseNegatives = distinctGoldStandard.stream()
-                .filter(gstl -> !isGoldStandardTraceLinkContainedInTraceLinks(gstl, distinctTraceLinks))
+                .filter(gstl -> !isGoldStandardTraceLinkContainedInTraceLinks(gstl, distinctTraceLinks, weakComparison))
                 .collect(Collectors.toSet());
         ImmutableList<String> falseNegativesList = Lists.immutable.ofAll(falseNegatives);
 
@@ -69,18 +81,26 @@ public class Evaluator {
         return EvaluationResults.createEvaluationResults(new ResultMatrix<>(truePositivesList, trueNegatives, falsePositivesList, falseNegativesList));
     }
 
-    private static boolean areTraceLinksMatching(String goldStandardTraceLink, String traceLink) {
+    private static boolean areTraceLinksMatching(String goldStandardTraceLink, String traceLink, boolean weakComparison) {
         traceLink = traceLink.strip();
         goldStandardTraceLink = goldStandardTraceLink.strip();
+        if (weakComparison) {
+            int indexOfDifference = StringUtils.indexOfDifference(traceLink, goldStandardTraceLink);
+            if (indexOfDifference > 0) {
+                var traceLinkPart = traceLink.substring(indexOfDifference + 1);
+                return goldStandardTraceLink.endsWith(traceLinkPart);
+            }
+            return false;
+        }
         return (goldStandardTraceLink.equals(traceLink));
     }
 
-    private static boolean isTraceLinkContainedInGoldStandard(String traceLink, Set<String> goldStandard) {
-        return goldStandard.stream().anyMatch(goldStandardTraceLink -> areTraceLinksMatching(goldStandardTraceLink, traceLink));
+    private static boolean isTraceLinkContainedInGoldStandard(String traceLink, Set<String> goldStandard, boolean weakComparison) {
+        return goldStandard.stream().anyMatch(goldStandardTraceLink -> areTraceLinksMatching(goldStandardTraceLink, traceLink, weakComparison));
     }
 
-    private static boolean isGoldStandardTraceLinkContainedInTraceLinks(String goldStandardTraceLink, Set<String> traceLinks) {
-        return traceLinks.stream().anyMatch(traceLink -> areTraceLinksMatching(goldStandardTraceLink, traceLink));
+    private static boolean isGoldStandardTraceLinkContainedInTraceLinks(String goldStandardTraceLink, Set<String> traceLinks, boolean weakComparison) {
+        return traceLinks.stream().anyMatch(traceLink -> areTraceLinksMatching(goldStandardTraceLink, traceLink, weakComparison));
     }
 
     private static ImmutableList<String> getLinesFromCsvFile(Path path) {
