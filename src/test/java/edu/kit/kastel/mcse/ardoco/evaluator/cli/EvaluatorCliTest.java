@@ -1,22 +1,13 @@
+/* Licensed under MIT 2023. */
 package edu.kit.kastel.mcse.ardoco.evaluator.cli;
-
-import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class EvaluatorCliTest {
-    private static final Logger logger = LoggerFactory.getLogger(EvaluatorCliTest.class);
-    private static final Map<String, Integer> nameToConfusionMatrixSum = Map.of( //
-            "bigbluebutton", 47600,//
-            "jabref", 26000, //
-            "mediastore", 3589, //
-            "teammates", 165330, //
-            "teastore", 8815);
+
     private EvaluatorCli cli;
 
     @BeforeEach

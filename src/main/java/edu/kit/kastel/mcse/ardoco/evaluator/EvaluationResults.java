@@ -35,8 +35,8 @@ public record EvaluationResults<T>(double precision, double recall, double f1, I
 
         // There are no true negatives set, so we cannot calculate the other metrics
         if (nrTrueNeg <= 0) {
-            return new EvaluationResults<>(precision, recall, f1, matrix.truePositives(), matrix.trueNegatives(), matrix.falseNegatives(),
-                    matrix.falsePositives(), accuracy, phiCoefficient, specificity, phiCoefficientMax, phiOverPhiMax);
+            return new EvaluationResults<>(precision, recall, f1, matrix.truePositives(), matrix.trueNegatives(), matrix.falseNegatives(), matrix
+                    .falsePositives(), accuracy, phiCoefficient, specificity, phiCoefficientMax, phiOverPhiMax);
         }
 
         if (nrTruePos + nrFalsePos + nrFalseNeg + nrTrueNeg != 0) {
